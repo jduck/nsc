@@ -1,0 +1,52 @@
+Summary: A netcat replacement built on top of libnsock
+Name: nsc
+Version: @VERSION@
+Release: 3
+License: GPL
+Group: Applications/Internet
+URL: ftp://qoop.org/libnsock/
+Source0: ftp://qoop.org/libnsock/nsc-%{version}.tgz
+# Source1:
+# Patch0:
+Buildroot: %{_tmppath}/%{name}-%{version}-root
+# BuildRequires: ncurses-devel
+# Obsoletes: 
+
+Requires: libnsock >= 0.9.5
+
+
+%description
+nsc is a netcat replacement built on top of the nsock library.  Almost
+all of the original netcat features have been implemented.  Additional
+features have been added.  Some such features are; piping data between
+two hosts, SSL support, and IPv6 family support.
+
+
+%prep
+%setup -q
+#%patch0 -p1 -b .p0
+
+
+%build
+%configure
+make
+
+
+%install
+mkdir -p %{_bindir}
+make install DESTDIR=%{buildroot}
+
+
+%clean
+rm -rf %{buildroot}
+
+
+%files
+%defattr(-,root,root)
+%doc CHANGES TODO certs/test.*
+%{_bindir}/nsc
+
+
+%changelog
+* Fri Jun 11 2004 Joshua J. Drake <libnsock@qoop.org>
+- initial creation

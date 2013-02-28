@@ -1,0 +1,114 @@
+#
+# don't understand?  http://www.gnu.org/manual/autoconf/
+# by: Joshua J. Drake <libnsock@qoop.org>
+#
+# modifications:
+#
+# 05/23/2004 - initial creation
+#
+
+AC_INIT(.version)
+
+
+# grok the version number from .version
+#
+VERSION=`cat .version`
+
+AC_REVISION($Revision: $VERSION $)
+
+echo "*** configuring nsc-$VERSION"
+echo
+
+AC_SUBST(VERSION)
+
+
+# check for debugging setting
+#
+CFLAGS="-Wall"
+LDFLAGS=""
+if test "x""$DEBUG" != "x"; then
+   CFLAGS="$CFLAGS -ggdb"
+else
+   CFLAGS="$CFLAGS -O2"
+   LDFLAGS="-s"
+fi
+AC_SUBST(CFLAGS)
+AC_SUBST(LDFLAGS)
+
+
+# check out compiler
+#
+AC_PROG_CC
+AC_PROG_CC_C_O
+AC_PROG_CPP
+AC_CACHE_SAVE
+
+
+# check for the socket library
+#
+AC_CHECK_FUNC(socket, , AC_CHECK_LIB(socket, socket, LIBS="$LIBS -lsocket", ))
+
+# check for dns resolution library
+#
+AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname, LIBS="$LIBS -lnsl", ))
+
+# check for ip address and numbers lib
+#
+AC_CHECK_FUNC(inet_aton, , AC_CHECK_LIB(resolv, inet_aton, LIBS="$LIBS -lresolv",) )
+
+
+
+# ssl checks
+saccept=0
+sread=0
+olibs="$LIBS"
+LIBS="$LIBS -lssl -lcrypto"
+AC_CHECK_LIB(ssl, SSL_accept, saccept=1,)
+AC_CHECK_LIB(ssl, SSL_read, sread=1,)
+AC_MSG_CHECKING([whether to enable SSL support])
+if test $saccept = 1 -a $sread = 1; then
+  AC_MSG_RESULT(yes)
+  ssl_used="yes"
+else
+  AC_MSG_RESULT(no)
+  LIBS="$olibs"
+fi
+
+
+# check for optional argument for libnsock location
+#
+AC_ARG_WITH(libnsock,
+    [  --with-libnsock=DIR
+                          Where to find the libnsock.so or libnsock.a
+                          files.],
+    [ LIBNSOCK_DIR=$withval; 
+      if test x`echo $LIBNSOCK_DIR | cut -c -1` = "x."; then
+         LIBNSOCK_DIR="$PWD/$LIBNSOCK_DIR";
+      fi
+      LDFLAGS="$LDFLAGS -L$LIBNSOCK_DIR" ],
+    [ LIBNSOCK_DIR="" ]
+    )
+AC_SUBST(LIBNSOCK_DIR)
+
+
+# check for libnsock (required)
+#
+AC_CHECK_LIB(nsock, nsock_init, LIBS="-lnsock $LIBS", AC_MSG_WARN(unable to find libnsock. try using the --with-libnsock arguemnt.); exit 1)
+if test -n "$LIBNSOCK_DIR"; then
+  ocppflags=$CPPFLAGS
+  CPPFLAGS="$CPPFLAGS -I$LIBNSOCK_DIR"
+  AC_CHECK_HEADER(nsock/nsock.h, INCLUDE="$INCLUDE -I$LIBNSOCK_DIR", AC_MSG_WARN(unable to find nsock.h. try using the --with-libnsock arguemnt.); exit 1)
+  CPPFLAGS=$ocppflags
+else
+  AC_CHECK_HEADER(nsock/nsock.h, , AC_MSG_WARN(unable to find nsock.h. try using the --with-libnsock arguemnt.); exit 1)
+fi
+
+
+AC_SUBST(CPPFLAGS)
+AC_SUBST(LIBS)
+AC_SUBST(INCLUDE)
+
+
+# create Makefile(s)
+#
+AC_OUTPUT(Makefile nsc.spec)

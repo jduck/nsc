@@ -1,0 +1,57 @@
+PROGNAME = nsc
+VERSION = @VERSION@
+DIRNAME = $(PROGNAME)-$(VERSION)
+RPMBUILDIR = $(HOME)/vault/rpmbuild
+
+CC = @CC@
+CFLAGS = @CFLAGS@ -DVERSTR=\"$(VERSION)\"
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+INCLUDE = @INCLUDE@
+
+LIBNSOCK_DIR = @LIBNSOCK_DIR@
+
+DESTDIR =
+prefix = @prefix@
+BINPATH = $(DESTDIR)/$(prefix)/bin
+
+
+OBJS = nsc.o io_pipe.o
+
+
+all: srcs.mk $(PROGNAME)
+
+.c.o:
+	$(CC) $(INCLUDE) $(CFLAGS) -c $<
+
+srcs.mk:
+	$(CC) $(INCLUDE) $(CFLAGS) -MM *.c > srcs.mk
+
+$(PROGNAME): Makefile $(OBJS)
+	$(CC) $(INCLUDE) $(CFLAGS) -o $(PROGNAME) $(OBJS) $(LDFLAGS) $(LIBS)
+	
+install: $(PROGNAME)
+	mkdir -p $(BINPATH)
+	install -m 511 $(PROGNAME) $(BINPATH)
+
+clean:
+	rm -f *.o nsc srcs.mk
+
+dist: distclean
+	cd ..; tar zcvvf $(DIRNAME)/no_dist/$(DIRNAME).tgz -X $(DIRNAME)/.ignore $(DIRNAME)
+
+distclean: clean
+	rm -f Makefile config.*
+
+configure:
+	autoconf-2.13
+
+rpms: dist
+	cp -a no_dist/$(DIRNAME).tgz $(RPMBUILDIR)/SOURCES
+	cp -a $(PROGNAME).spec $(RPMBUILDIR)/SPECS
+	pushd $(RPMBUILDIR) &> /dev/null ; rpmbuild -ba SPECS/$(PROGNAME).spec ; popd &> /dev/null
+	mv $(RPMBUILDIR)/SRPMS/$(DIRNAME)* no_dist/RPMS
+	mv $(RPMBUILDIR)/RPMS/*/$(DIRNAME)* no_dist/RPMS
+	ls -l no_dist/RPMS/$(DIRNAME)*
+	rm -f $(RPMBUILDIR)/SPECS/$(PROGNAME).spec $(RPMBUILDIR)/SOURCES/$(DIRNAME).tgz
+	rm -rf $(RPMBUILDIR)/BUILD/$(DIRNAME)

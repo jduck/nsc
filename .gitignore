@@ -3,3 +3,8 @@ nsc
 *.o
 srcs.mk
 
+nsc.spec
+*.key
+*.csr
+*.crt
+no_dist

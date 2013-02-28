@@ -1,0 +1,22 @@
+10/03/2005 	jjd 	- added option to put oob data inline (ignored
+			  otherwise)
+
+08/28/2005 	jjd 	- fixed problem with -S option in getopt string
+
+06/12/2004 	jjd 	- changed version to 1.1
+			- added -4 and -6 for IPv6 machines
+			- re-wrote reverse_host() to use new
+			  nsock_inet_resolve_rev()
+			
+06/11/2004 	jjd	- added nsc.spec for building rpms
+		   	- fixed checking for -lsocket and -lnsl
+
+06/10/2004 	jjd 	- added udp mode
+			- telnet is not supported!! (and doesn't dump
+			  to output either!! woop!)
+
+05/29/2004 	jjd 	- got nsc to compile on solaris 8 x86
+
+05/27/2004 	jjd 	- killed child process if it did not exit by itself
+			  after io_pipe finished
+			- initial creation of changes file
