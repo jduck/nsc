@@ -1,0 +1,4 @@
+- unimplemented options from netcat (some to be implemented in the
+  library)
+- reverse resolving.. possibly service ent stuff
+- support netcat's little known -e and -t options

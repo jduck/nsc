@@ -1,0 +1,3 @@
+[submodule "libnsock"]
+	path = libnsock
+	url = https://github.com/jduck/nsock.git
